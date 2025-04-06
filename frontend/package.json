@@ -8,6 +8,12 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.5.0",
+    "react-scripts": "5.0.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Rimee2005/Zerodha-Clone.git"
@@ -15,10 +21,20 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Rimee2005/Zerodha-Clone/issues"
   },
-  "homepage": "https://github.com/Rimee2005/Zerodha-Clone#readme",
-  "description": ""
+  "description": "",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

@@ -1,8 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { positions } from "../data/data";
+import axios from "axios";
+
 
 const Positions = () => {
+  const [positions, setPositions] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:3002/api/positions") // 👈 Replace with your backend URL
+      .then(res => {
+        setPositions(res.data);
+      })
+      .catch(err => {
+        console.error("Error fetching  position", err);
+      });
+  }, []);
+
   return (
     <>
       <h3 className="title">Positions ({positions.length})</h3>

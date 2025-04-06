@@ -1,6 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
 const { HoldingsModel } = require("./model/HoldingsModel");
 const {PositionsModel} = require("./model/PositionsModel")
 
@@ -9,15 +12,28 @@ const uri = process.env.MONGO_URL;
 
 const app = express();
 
-app.get('/allHoldings' , async(req , res) =>{
-  let allHoldings = await HoldingsModel.find({});
-  res.json(allHoldings);
-})
+app.use(cors());
+app.use(bodyParser.json());
 
-app.get('/allPositions' , async(req , res) =>{
-  let allPositions = await PositionsModel.find({});
-  res.json(allPositions);
-})
+app.get("/api/holdings", async (req, res) => {
+  try {
+    const holdings = await HoldingsModel.find(); // from MongoDB
+    res.json(holdings);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch holdings" });
+  }
+});
+
+app.get("/api/positions", async (req, res) => {
+  try {
+    const positions = await PositionsModel.find(); // Or whatever your model is
+    res.json(positions);
+  } catch (err) {
+    console.error("Error fetching positions", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 // Connect to MongoDB BEFORE starting the server
 mongoose
