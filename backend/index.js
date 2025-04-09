@@ -5,45 +5,130 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const { HoldingsModel } = require("./model/HoldingsModel");
-const {PositionsModel} = require("./model/PositionsModel")
+const { PositionsModel } = require("./model/PositionsModel");
+const { OrdersModel } = require("./model/OrdersModel");
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
+
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
 
+// ---------- GET Holdings ----------
 app.get("/api/holdings", async (req, res) => {
   try {
-    const holdings = await HoldingsModel.find(); // from MongoDB
+    const holdings = await HoldingsModel.find();
     res.json(holdings);
   } catch (error) {
+    console.error("❌ Error fetching holdings:", error);
     res.status(500).json({ error: "Failed to fetch holdings" });
   }
 });
 
+// ---------- GET Positions ----------
 app.get("/api/positions", async (req, res) => {
   try {
-    const positions = await PositionsModel.find(); // Or whatever your model is
+    const positions = await PositionsModel.find();
     res.json(positions);
   } catch (err) {
-    console.error("Error fetching positions", err);
+    console.error("❌ Error fetching positions:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// ---------- POST New Order (Buy/Sell) ----------
+app.post('/newOrder', async (req, res) => {
+  const { name, qty, price, mode } = req.body;
 
-// Connect to MongoDB BEFORE starting the server
+  try {
+    // Step 1: Save Order
+    const newOrder = new OrdersModel({ name, qty, price, mode });
+    await newOrder.save();
+    console.log("📥 New order saved:", newOrder);
+
+    // Step 2: BUY Mode
+    if (mode === "BUY") {
+      let existing = await HoldingsModel.findOne({ name });
+
+      if (existing) {
+        const totalQty = existing.qty + qty;
+        const totalInvestment = (existing.qty * existing.avg) + (qty * price);
+        const newAvg = totalInvestment / totalQty;
+
+        existing.qty = totalQty;
+        existing.avg = newAvg;
+        existing.price = price;
+
+        await existing.save();
+        console.log("🟢 Updated existing holding:", existing);
+      } else {
+        const newHolding = new HoldingsModel({
+          name,
+          qty,
+          avg: price,
+          price,
+          net: "+0.00%",
+          day: "+0.00%",
+        });
+
+        await newHolding.save();
+        console.log("🆕 New holding created:", newHolding);
+      }
+
+    // Step 3: SELL Mode
+    } else if (mode === "SELL") {
+      let existing = await HoldingsModel.findOne({ name });
+
+      if (!existing) {
+        console.log("❌ Cannot sell. Holding not found.");
+        return res.status(404).send("❌ Holding not found to sell.");
+      }
+
+      if (qty > existing.qty) {
+        return res.status(400).send("❌ Cannot sell more than you hold.");
+      }
+
+      const remainingQty = existing.qty - qty;
+
+      if (remainingQty === 0) {
+        await HoldingsModel.deleteOne({ name });
+        console.log(`🗑️ Entire holding sold and deleted: ${name}`);
+      } else {
+        const totalInvestment = (existing.qty * existing.avg) - (qty * price);
+        const newAvg = totalInvestment / remainingQty;
+
+        existing.qty = remainingQty;
+        existing.avg = newAvg;
+        existing.price = price;
+
+        await existing.save();
+        console.log("🔻 Holding after sell updated:", existing);
+      }
+    }
+
+    res.send("✅ Order placed and holdings updated.");
+  } catch (error) {
+    console.error("🔥 Error in /newOrder:", error);
+    res.status(500).send("❌ Server error while processing order.");
+  }
+});
+
+// ---------- DB Connection + Server Start ----------
 mongoose
   .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-    console.log("✅ DB connected");
+    console.log("✅ MongoDB connected");
     app.listen(PORT, () => {
-      console.log(` Server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
+  });
+
 
 // app.get("/addHoldings", async (req, res) => {
 //   let tempHoldings = [
