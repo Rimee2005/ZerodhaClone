@@ -5,14 +5,17 @@ const Holdings = () => {
   const [holdings, setHoldings] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3002/api/holdings") // 👈 Replace with your backend URL
-      .then(res => {
+    const fetchHoldings = async () => {
+      try {
+        const res = await axios.get("http://localhost:3002/api/holdings");
         setHoldings(res.data);
-      })
-      .catch(err => {
-        console.error("Error fetching holdings", err);
-      });
-  }, []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
+    };
+  
+    fetchHoldings();
+  }, []); 
 
   return (
     <>

@@ -40,7 +40,7 @@ app.get("/api/positions", async (req, res) => {
 });
 
 // ---------- POST New Order (Buy/Sell) ----------
-app.post('/newOrder', async (req, res) => {
+app.post('/api/newOrder', async (req, res) => {
   const { name, qty, price, mode } = req.body;
 
   try {
@@ -115,6 +115,17 @@ app.post('/newOrder', async (req, res) => {
     res.status(500).send("❌ Server error while processing order.");
   }
 });
+
+app.get("/api/orders", async (req, res) => {
+  try {
+    const orders = await OrdersModel.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error("❌ Error fetching orders:", err);
+    res.status(500).json({ error: "Server error while fetching orders" });
+  }
+});
+
 
 // ---------- DB Connection + Server Start ----------
 mongoose
