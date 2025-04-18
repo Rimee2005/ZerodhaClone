@@ -1,5 +1,7 @@
-import React from "react";
-import { Route, Routes } from "react-router-dom";
+import React ,  { useEffect } from "react";
+import { Route, Routes , useNavigate} from "react-router-dom";
+
+
 
 import Apps from "./Apps";
 import Funds from "./Funds";
@@ -9,13 +11,23 @@ import Orders from "./Orders";
 import Positions from "./Positions";
 import Summary from "./Summary";
 import WatchList from "./WatchList";
-import { GeneralContextProvider } from "./GeneralContext";
+// import { GeneralContextProvider } from "./GeneralContext";
+
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      navigate("/login"); // User logged in nahi hai, to login page pe bhej do
+    }
+  }, []);
   return (
-    <GeneralContextProvider> {/* Shifted here */}
+   
       <div className="dashboard-container">
         <WatchList />
+        
         <div className="content">
           <Routes>
             <Route exact path="/" element={<Summary />} />
@@ -27,9 +39,7 @@ const Dashboard = () => {
           </Routes>
         </div>
       </div>
-    </GeneralContextProvider>
   );
 };
-
 
 export default Dashboard;
