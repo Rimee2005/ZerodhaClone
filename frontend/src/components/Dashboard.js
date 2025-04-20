@@ -20,9 +20,9 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="dashboard-container" style={{ display: "flex" }}>
-      <div className="content" style={{ flex: 1, padding: "20px" }}>
-        <WatchList />
+    <div className="dashboard-container" style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <WatchList /> {/* Top navigation */}
+      <div className="content" style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
         <Routes>
           <Route path="/" element={<Summary />} />
           <Route path="/orders" element={<Orders />} />

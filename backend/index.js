@@ -8,7 +8,6 @@ const bodyParser = require("body-parser");
 const { HoldingsModel } = require("./model/HoldingsModel");
 const { PositionsModel } = require("./model/PositionsModel");
 const { OrdersModel } = require("./model/OrdersModel");
-const {User} = require("./model/user");
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
@@ -16,49 +15,12 @@ const uri = process.env.MONGO_URL;
 
 const app = express();
 
+const authRoute = require('./routes/auth');
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// 
-
-// ---------- POST Signup ----------
-app.post("/api/signup", async (req, res) => {
-  const { username, email, password } = req.body;
-
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: "User already exists" });
-    }
-
-    const newUser = new User({ username, email, password }); // You can add bcrypt later for hashing
-    await newUser.save();
-
-    // Response can include user info or token
-    res.status(201).json({ message: "Signup successful", user: newUser });
-  } catch (error) {
-    console.error("❌ Signup error:", error);
-    res.status(500).json({ error: "Server error during signup" });
-  }
-});
-
-//Login 
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    res.json({ message: "Login successful", user });
-  } catch (err) {
-    console.error("❌ Login error:", err);
-    res.status(500).json({ error: "Server error during login" });
-  }
-});
+app.use('/api/user', authRoute);
 
 
 // ---------- GET Holdings ----------
