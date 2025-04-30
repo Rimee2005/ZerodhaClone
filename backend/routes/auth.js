@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const User = require("../model/user");
 const { registerValidation, loginValidation } = require("../validation");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs"); // ✅ same as in register route
+
 
 // Register Route
 router.post("/register", async (req, res) => {
@@ -44,22 +45,25 @@ router.post("/login", async (req, res) => {
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  // ✅ Extract email and password from request
+  const { email, password } = req.body;
+
   // Find the user by email
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send("Email not found");
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
 
-  console.log("👉 Plain password entered:", req.body.password);
-  console.log("👉 Trimmed password:", req.body.password.trim());
-  console.log("👉 Hashed password in DB:", user.password);
+  // Compare passwords using bcrypt
+  const isPasswordCorrect = await bcrypt.compare(password.trim(), user.password);
 
-  // Compare the entered password with the hashed password in the DB
-  const validPass = await bcrypt.compare(req.body.password.trim(), user.password);
-  console.log("👉 Password match?", validPass);
+  if (!isPasswordCorrect) {
+    return res.status(400).json({ message: "Invalid password" });
+  }
 
-  if (!validPass) return res.status(400).send("Invalid password");
-
-  // If valid, send success message
-  res.send("Logged in successfully");
+  // Success
+  res.status(200).json({ message: "Login successful", user });
 });
+
 
 module.exports = router;
