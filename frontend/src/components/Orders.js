@@ -65,9 +65,9 @@ const Orders = () => {
       {orders.length === 0 ? (
         <div style={noOrderStyle}>
           <p>You haven't placed any orders yet.</p>
-          <Link to={"/"} style={btnStyle}>
-            Get started
-          </Link>
+          <p style={{ fontSize: "14px", color: "#999", marginTop: "10px" }}>
+            Use the watchlist on the left to buy or sell stocks
+          </p>
         </div>
       ) : (
         <>

@@ -20,17 +20,19 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="dashboard-container" style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <WatchList /> {/* Top navigation */}
-      <div className="content" style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-        <Routes>
-          <Route path="/" element={<Summary />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/holdings" element={<Holdings />} />
-          <Route path="/positions" element={<Positions />} />
-          <Route path="/funds" element={<Funds />} />
-          <Route path="/apps" element={<Apps />} />
-        </Routes>
+    <div className="dashboard-container">
+      <div style={{ display: "flex", height: "100%" }}>
+        <WatchList />
+        <div className="content">
+          <Routes>
+            <Route path="" element={<Summary />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="holdings" element={<Holdings />} />
+            <Route path="positions" element={<Positions />} />
+            <Route path="funds" element={<Funds />} />
+            <Route path="apps" element={<Apps />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
