@@ -66,38 +66,40 @@ const Orders = () => {
         <div style={noOrderStyle}>
           <p>You haven't placed any orders yet.</p>
           <p style={{ fontSize: "14px", color: "#999", marginTop: "10px" }}>
-            Use the watchlist on the left to buy or sell stocks
+            Use the watchlist to buy or sell stocks
           </p>
         </div>
       ) : (
         <>
           <h2 style={headingStyle}>Your Orders ({orders.length})</h2>
-          <table style={tableStyle}>
-            <thead>
-              <tr style={{ backgroundColor: "#f2f2f2" }}>
-                <th style={thTdStyle}>#</th>
-                <th style={thTdStyle}>Mode</th>
-                <th style={thTdStyle}>Instrument</th>
-                <th style={thTdStyle}>Qty</th>
-                <th style={thTdStyle}>Price (₹)</th>
-                <th style={thTdStyle}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order, index) => (
-                <tr key={index}>
-                  <td style={thTdStyle}>{index + 1}</td>
-                  <td style={{ ...thTdStyle, color: order.mode === "BUY" ? "green" : "red", fontWeight: "bold" }}>
-                    {order.mode}
-                  </td>
-                  <td style={thTdStyle}>{order.name}</td>
-                  <td style={thTdStyle}>{order.qty}</td>
-                  <td style={thTdStyle}>₹{order.price.toFixed(2)}</td>
-                  <td style={thTdStyle}>{new Date(order.createdAt).toLocaleString()}</td>
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <table style={tableStyle}>
+              <thead>
+                <tr style={{ backgroundColor: "#f2f2f2" }}>
+                  <th style={thTdStyle}>#</th>
+                  <th style={thTdStyle}>Mode</th>
+                  <th style={thTdStyle}>Instrument</th>
+                  <th style={thTdStyle}>Qty</th>
+                  <th style={thTdStyle}>Price (₹)</th>
+                  <th style={thTdStyle}>Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((order, index) => (
+                  <tr key={index}>
+                    <td style={thTdStyle}>{index + 1}</td>
+                    <td style={{ ...thTdStyle, color: order.mode === "BUY" ? "green" : "red", fontWeight: "bold" }}>
+                      {order.mode}
+                    </td>
+                    <td style={thTdStyle}>{order.name}</td>
+                    <td style={thTdStyle}>{order.qty}</td>
+                    <td style={thTdStyle}>₹{order.price.toFixed(2)}</td>
+                    <td style={thTdStyle}>{new Date(order.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </div>

@@ -21,7 +21,7 @@ const Summary = () => {
         <hr className="divider" style={{ marginTop: "16px" }} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "32px" }}>
+      <div className="summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", marginBottom: "32px" }}>
         {/* Equity Card */}
         <div className="section" style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

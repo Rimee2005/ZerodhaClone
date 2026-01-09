@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Menu = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [selectedMenu, setSelectedMenu] = useState(0);
-  const [isProfieDropdownOpen, setIsProfieDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user"));
@@ -22,12 +23,35 @@ const Menu = () => {
     else setSelectedMenu(0);
   }, [location]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
+
   const handleMenuClick = (index) => {
     setSelectedMenu(index);
   };
 
-  const handleProfileClick = (index) => {
-    setIsProfieDropdownOpen(!isProfieDropdownOpen);
+  const handleProfileClick = (e) => {
+    e.stopPropagation();
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   const getInitials = (username) => {
@@ -40,7 +64,7 @@ const Menu = () => {
 
   return (
     <div className="menu-container">
-      <img src="logo.svg" style={{ width: "40px" }} alt="Logo" />
+      <img src="/images/logo.svg" className="logo" alt="Logo" />
       <div className="menus">
         <ul>
           <li>
@@ -94,7 +118,7 @@ const Menu = () => {
               onClick={() => handleMenuClick(4)}
             >
               <p className={selectedMenu === 4 ? activeMenuClass : menuClass}>
-              Funds
+                Funds
               </p>
             </Link>
           </li>
@@ -105,15 +129,50 @@ const Menu = () => {
               onClick={() => handleMenuClick(6)}
             >
               <p className={selectedMenu === 6 ? activeMenuClass : menuClass}>
-              Apps
+                Apps
               </p>
             </Link>
           </li>
         </ul>
         <hr />
-        <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">{getInitials(user?.username)}</div>
-          <p className="username">{user?.username || "User"}</p>
+        <div className="profile-container" ref={dropdownRef}>
+          <div className="profile" onClick={handleProfileClick}>
+            <div className="avatar">{getInitials(user?.username)}</div>
+            <p className="username">{user?.username || "User"}</p>
+            <span className="dropdown-arrow" style={{
+              marginLeft: "8px",
+              transition: "transform 0.3s ease",
+              transform: isProfileDropdownOpen ? "rotate(180deg)" : "rotate(0deg)"
+            }}>
+              ▼
+            </span>
+          </div>
+          
+          {isProfileDropdownOpen && (
+            <div className="profile-dropdown">
+              <div className="dropdown-header">
+                <div className="avatar-large">{getInitials(user?.username)}</div>
+                <div>
+                  <p className="dropdown-username">{user?.username || "User"}</p>
+                  <p className="dropdown-email">{user?.email || ""}</p>
+                </div>
+              </div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item" onClick={() => setIsProfileDropdownOpen(false)}>
+                <span className="dropdown-icon">👤</span>
+                <span>Profile</span>
+              </div>
+              <div className="dropdown-item" onClick={() => setIsProfileDropdownOpen(false)}>
+                <span className="dropdown-icon">⚙️</span>
+                <span>Settings</span>
+              </div>
+              <div className="dropdown-divider"></div>
+              <div className="dropdown-item logout" onClick={handleLogout}>
+                <span className="dropdown-icon">🚪</span>
+                <span>Logout</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

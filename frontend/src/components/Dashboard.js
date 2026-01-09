@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <div style={{ display: "flex", height: "100%" }}>
+      <div className="dashboard-layout">
         <WatchList />
         <div className="content">
           <Routes>
