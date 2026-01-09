@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter, Routes, Route, useLocation} from 'react-router-dom';
 import './index.css';
 import HomePage from './landing_page/home/HomePage';
 import Aboutpage from './landing_page/about/AboutPage';
@@ -10,24 +10,38 @@ import SupportPage from './landing_page/support/SupportPage';
 import Navbar from './landing_page/Navbar';
 import Footer from './landing_page/Footer';
 import NotFound from './landing_page/NotFound';
-// import SignupPage from './landing_page/signup/SignupPage';
+import SignupPage from './landing_page/signup/SignupPage';
+import LoginPage from './landing_page/login/LoginPage';
+import Home from './components/Home';
 // import 'react-toastify/ReactToastify.css'
 
+function App() {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
+  
+  return (
+    <>
+      {!isDashboard && <Navbar/>}
+      <Routes>
+        <Route path="/" element={<HomePage/>} /> 
+        <Route path="/signup" element={<SignupPage/>}/>
+        <Route path="/login" element={<LoginPage/>}/>
+        <Route path="/dashboard/*" element={<Home/>}/>
+        <Route path="/about" element={<Aboutpage/>}/>
+        <Route path="/product" element={<ProductPage/>}/>
+        <Route path="/pricing" element={<PricingPage/>}/>
+        <Route path="/support" element={<SupportPage/>}/>
+        <Route path="/*" element={<NotFound/>}/>
+      </Routes>
+      {!isDashboard && <Footer/>}
+    </>
+  );
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
  <BrowserRouter>
- <Navbar/>
-  <Routes>
-    <Route path="/" element={<HomePage/>} /> 
-    {/* <Route path="/signup/*" element={<SignupPage/>}/> */}
-    <Route path="/about" element={<Aboutpage/>}/>
-    <Route path="/product" element={<ProductPage/>}/>
-    <Route path="/pricing" element={<PricingPage/>}/>
-    <Route path="/support" element={<SupportPage/>}/>
-    <Route path="/*" element={<NotFound/>}/>
-  </Routes>
-  <Footer/>
+  <App/>
  </BrowserRouter>
 );
 

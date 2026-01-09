@@ -18,11 +18,14 @@ router.post("/register", async (req, res) => {
 
   // Hash the password
   const plainPassword = req.body.password.trim();
-  console.log("👉 Plain password to hash:", plainPassword);
+  console.log("👉 Plain password to hash:", `"${plainPassword}"`);
+  console.log("👉 Plain password length:", plainPassword.length);
+  console.log("👉 Email:", req.body.email);
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(plainPassword, salt);
-  console.log("👉 Hashed password:", hashedPassword);
+  console.log("✅ Password hashed successfully");
+  console.log("👉 Hash preview:", hashedPassword.substring(0, 20) + "...");
 
   // Save the user to the database
   const user = new User({
@@ -32,9 +35,23 @@ router.post("/register", async (req, res) => {
   });
 
   try {
+    console.log("💾 Hash before save:", hashedPassword.substring(0, 30) + "...");
     const savedUser = await user.save();
+    
+    console.log("💾 Hash after save:", savedUser.password ? savedUser.password.substring(0, 30) + "..." : "null");
+    console.log("💾 Hashes match?", hashedPassword === savedUser.password);
+    
+    // Verify the hash was saved correctly by testing it
+    const testCompare = await bcrypt.compare(plainPassword, savedUser.password);
+    console.log("🔍 Verification: Can we compare the saved hash?", testCompare);
+    
+    // Also test with the original hash we created
+    const testCompareOriginal = await bcrypt.compare(plainPassword, hashedPassword);
+    console.log("🔍 Verification: Can we compare with original hash?", testCompareOriginal);
+    
     res.send(savedUser);
   } catch (err) {
+    console.error("❌ Error saving user:", err);
     res.status(400).send(err);
   }
 });
@@ -43,25 +60,67 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   // Validate login input
   const { error } = loginValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) {
+    console.log("❌ Validation error:", error.details[0].message);
+    return res.status(400).json({ message: error.details[0].message, details: error.details });
+  }
 
   // ✅ Extract email and password from request
   const { email, password } = req.body;
+  const trimmedPassword = password.trim();
+
+  console.log("🔐 Login attempt for email:", email);
+  console.log("🔐 Password length:", trimmedPassword.length);
 
   // Find the user by email
   const user = await User.findOne({ email });
   if (!user) {
+    console.log("❌ User not found for email:", email);
     return res.status(404).json({ message: "User not found" });
   }
 
+  console.log("✅ User found:", user.email);
+  console.log("🔐 Stored password hash exists:", !!user.password);
+  console.log("🔐 Login password:", `"${trimmedPassword}"`);
+  console.log("🔐 Login password length:", trimmedPassword.length);
+  console.log("🔐 Stored hash length:", user.password ? user.password.length : 0);
+  console.log("🔐 Stored hash preview:", user.password ? user.password.substring(0, 30) + "..." : "null");
+  console.log("🔐 Stored hash starts with $2:", user.password ? user.password.startsWith('$2') : false);
+
+  // Verify the hash format is correct (bcrypt hashes start with $2a$, $2b$, or $2y$)
+  if (user.password && !user.password.startsWith('$2')) {
+    console.log("⚠️ WARNING: Password hash doesn't look like a valid bcrypt hash!");
+    return res.status(500).json({ message: "Database error: Invalid password format" });
+  }
+
   // Compare passwords using bcrypt
-  const isPasswordCorrect = await bcrypt.compare(password.trim(), user.password);
+  let isPasswordCorrect = await bcrypt.compare(trimmedPassword, user.password);
+  console.log("🔐 First comparison (trimmed):", isPasswordCorrect);
+  
+  // Fallback: try with original password (in case user signed up without trimming)
+  if (!isPasswordCorrect && password !== trimmedPassword) {
+    console.log("🔐 Trying with original password (no trim)");
+    isPasswordCorrect = await bcrypt.compare(password, user.password);
+    console.log("🔐 Second comparison (original):", isPasswordCorrect);
+  }
+  
+  // Additional debug: try comparing with the exact string from registration
+  if (!isPasswordCorrect) {
+    console.log("🔐 Testing direct hash generation...");
+    const testHash = await bcrypt.hash(trimmedPassword, 10);
+    const testCompare = await bcrypt.compare(trimmedPassword, testHash);
+    console.log("🔐 Test hash comparison works:", testCompare);
+  }
+  
+  console.log("🔐 Final password comparison result:", isPasswordCorrect);
 
   if (!isPasswordCorrect) {
+    console.log("❌ Password mismatch for user:", email);
     return res.status(400).json({ message: "Invalid password" });
   }
 
   // Success
+  console.log("✅ Login successful for user:", email);
   res.status(200).json({ message: "Login successful", user });
 });
 

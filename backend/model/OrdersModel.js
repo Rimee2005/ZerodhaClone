@@ -10,9 +10,14 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to hash the password
+// Pre-save hook to hash the password (only if not already hashed)
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+  // If password is already a bcrypt hash (starts with $2), don't re-hash it
+  if (this.password && this.password.startsWith('$2')) {
+    return next();
+  }
+  // Only hash if it's a plain text password
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
