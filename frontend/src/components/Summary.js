@@ -5,14 +5,9 @@ const Summary = () => {
   const username = user?.username || "User";
 
   return (
-    <div style={{ padding: "0" }}>
+    <div >
       <div className="username" style={{ marginBottom: "32px" }}>
-        <h2 style={{ 
-          fontSize: "1.75rem", 
-          fontWeight: "600", 
-          color: "#212529", 
-          margin: "0 0 8px 0" 
-        }}>
+        <h2 >
           Hi, {username}! 👋
         </h2>
         <p style={{ color: "#6c757d", fontSize: "0.9rem", margin: 0 }}>

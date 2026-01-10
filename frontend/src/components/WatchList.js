@@ -3,9 +3,33 @@ import { watchlist } from "../data/data";
 import BuyActionWindow from "./BuyActionWindow";
 import { BarChartOutlined, KeyboardArrowDown, KeyboardArrowUp, MoreHoriz } from "@mui/icons-material";
 import { Tooltip, Grow } from "@mui/material";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  ChartTooltip,
+  Legend
+);
 
 const WatchList = () => {
   const [popup, setPopup] = useState({ type: null, uid: null });
+  const [showChart, setShowChart] = useState(true);
 
   const showPopup = (type, uid) => {
     setPopup({ type, uid });
@@ -13,6 +37,186 @@ const WatchList = () => {
 
   const closePopup = () => {
     setPopup({ type: null, uid: null });
+  };
+
+  // Prepare chart data for watchlist prices
+  const priceChartData = {
+    labels: watchlist.map(stock => stock.name),
+    datasets: [
+      {
+        label: 'Price (₹)',
+        data: watchlist.map(stock => stock.price),
+        borderColor: 'rgb(56, 126, 209)',
+        backgroundColor: 'rgba(56, 126, 209, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  // Prepare chart data for percentage change
+  const percentChartData = {
+    labels: watchlist.map(stock => stock.name),
+    datasets: [
+      {
+        label: 'Change (%)',
+        data: watchlist.map(stock => parseFloat(stock.percent.replace('%', ''))),
+        backgroundColor: watchlist.map(stock => 
+          stock.isDown ? 'rgba(220, 53, 69, 0.8)' : 'rgba(40, 167, 69, 0.8)'
+        ),
+        borderColor: watchlist.map(stock => 
+          stock.isDown ? 'rgba(220, 53, 69, 1)' : 'rgba(40, 167, 69, 1)'
+        ),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        borderColor: '#387ed1',
+        borderWidth: 2,
+        callbacks: {
+          label: function(context) {
+            if (context.dataset.label === 'Price (₹)') {
+              return 'Price: ₹' + context.parsed.y.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+            } else {
+              return 'Change: ' + context.parsed.y.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '600',
+          },
+          color: '#6c757d',
+        },
+      },
+      y: {
+        beginAtZero: false,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '600',
+          },
+          color: '#6c757d',
+          callback: function(value) {
+            if (value >= 1000) {
+              return '₹' + (value / 1000).toFixed(1) + 'k';
+            }
+            return '₹' + value;
+          },
+        },
+      },
+    },
+    elements: {
+      point: {
+        radius: 4,
+        hoverRadius: 6,
+        backgroundColor: '#387ed1',
+        borderColor: '#ffffff',
+        borderWidth: 2,
+      },
+      line: {
+        borderWidth: 3,
+        tension: 0.4,
+      },
+    },
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          size: 13,
+        },
+        borderColor: '#387ed1',
+        borderWidth: 2,
+        callbacks: {
+          label: function(context) {
+            const value = context.parsed.y;
+            const color = value >= 0 ? '#28a745' : '#dc3545';
+            return 'Change: ' + value.toFixed(2) + '%';
+          }
+        }
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '600',
+          },
+          color: '#6c757d',
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+            weight: '600',
+          },
+          color: '#6c757d',
+          callback: function(value) {
+            return value.toFixed(2) + '%';
+          },
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+    },
   };
 
   return (
@@ -120,6 +324,35 @@ const WatchList = () => {
           </li>
         ))}
       </ul>
+
+      {/* Chart Toggle Button */}
+      <div className="watchlist-chart-header">
+        <h4 className="watchlist-chart-title">Watchlist Charts</h4>
+        <button
+          onClick={() => setShowChart(!showChart)}
+          className="watchlist-chart-toggle"
+        >
+          {showChart ? 'Hide' : 'Show'} Charts
+        </button>
+      </div>
+
+      {/* Charts Section */}
+      {showChart && (
+        <div className="watchlist-charts-wrapper">
+          <div className="watchlist-chart-card">
+            <h5 className="watchlist-chart-card-title">Price Trend</h5>
+            <div className="watchlist-chart-container">
+              <Line data={priceChartData} options={chartOptions} />
+            </div>
+          </div>
+          <div className="watchlist-chart-card">
+            <h5 className="watchlist-chart-card-title">Daily Change (%)</h5>
+            <div className="watchlist-chart-container">
+              <Bar data={percentChartData} options={barChartOptions} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

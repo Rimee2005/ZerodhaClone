@@ -135,7 +135,7 @@ app.get("/api/orders", async (req, res) => {
 
 // ---------- DB Connection + Server Start ----------
 mongoose
-  .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(uri)
   .then(() => {
     console.log("✅ MongoDB connected");
     app.listen(PORT, () => {
@@ -143,7 +143,15 @@ mongoose
     });
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err);
+    console.error("❌ MongoDB connection failed:", err.message);
+    console.error("\n📋 Troubleshooting steps:");
+    console.error("1. Check if your IP address is whitelisted in MongoDB Atlas");
+    console.error("   Go to: https://cloud.mongodb.com → Network Access → Add IP Address");
+    console.error("   For development, you can temporarily allow all IPs: 0.0.0.0/0");
+    console.error("2. Verify your MONGO_URL in .env file is correct");
+    console.error("3. Check your internet connection");
+    console.error("4. Ensure your MongoDB Atlas cluster is running\n");
+    process.exit(1);
   });
 
 
