@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# ZerodhaClone
-=======
 # Zerodha Clone
->>>>>>> 8cacfac (Tring to deploy backend.)
 
 A full-stack trading platform clone inspired by Zerodha, built with React and Node.js. This application provides a comprehensive trading dashboard with portfolio management, order tracking, holdings visualization, and real-time market data.
 
@@ -93,15 +89,23 @@ MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/zerodha?retryWrite
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ```
 
+### Frontend (.env)
+Create a `.env` file in the `frontend` directory:
+
+```env
+REACT_APP_API_URL=https://zerodhaclone-backend-zzco.onrender.com
+```
+
+For local development:
+```env
+REACT_APP_API_URL=http://localhost:3002
+```
+
 ### MongoDB Atlas Setup
 1. Create a MongoDB Atlas account at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 2. Create a new cluster
 3. Get your connection string
-<<<<<<< HEAD
-4. Whitelist your IP address in Network Access
-=======
 4. **Important for Deployment**: Whitelist IP address `0.0.0.0/0` in Network Access to allow connections from anywhere (required for cloud deployments like Render)
->>>>>>> 8cacfac (Tring to deploy backend.)
 5. Update `MONGO_URL` in `.env`
 
 ## 🚀 Running the Application
@@ -111,11 +115,6 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 1. **Start the Backend Server**
    ```bash
    cd backend
-<<<<<<< HEAD
-   npm start
-   # or
-=======
->>>>>>> 8cacfac (Tring to deploy backend.)
    npm run dev
    ```
    Server will run on `http://localhost:3002`
@@ -138,17 +137,15 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 2. **Start the Backend in Production**
    ```bash
    cd backend
-<<<<<<< HEAD
-   npm run prod
-   ```
-
-=======
    npm start
    # or
    npm run prod
    ```
 
 ## 🌐 Deployment
+
+### Live Backend
+Backend is deployed at: **https://zerodhaclone-backend-zzco.onrender.com/**
 
 ### Deploying to Render
 
@@ -171,7 +168,8 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 3. Configure:
    - **Build Command**: `cd frontend && npm install && npm run build`
    - **Publish Directory**: `frontend/build`
-4. Update API URLs in frontend to point to your deployed backend URL
+4. Add Environment Variable:
+   - `REACT_APP_API_URL` - Your backend URL (e.g., `https://zerodhaclone-backend-zzco.onrender.com`)
 
 ### MongoDB Atlas Configuration for Deployment
 1. Go to [MongoDB Atlas](https://cloud.mongodb.com)
@@ -180,8 +178,11 @@ JWT_SECRET=your-super-secret-jwt-key-change-in-production
 4. For cloud deployments, add `0.0.0.0/0` to allow all IPs (or add specific Render IPs)
 5. Click **Confirm**
 
->>>>>>> 8cacfac (Tring to deploy backend.)
 ## 📡 API Endpoints
+
+### Base URL
+- **Production**: `https://zerodhaclone-backend-zzco.onrender.com`
+- **Development**: `http://localhost:3002`
 
 ### Authentication
 - `POST /api/user/register` - Register a new user
@@ -238,7 +239,7 @@ ZerodhaClone/
 │   ├── routes/
 │   │   └── auth.js           # Authentication routes
 │   ├── schemas/              # Mongoose schemas
-│   ├── validation.js         # Input validation schemas
+│   ├── validation.js        # Input validation schemas
 │   └── package.json
 │
 ├── frontend/
@@ -252,6 +253,8 @@ ZerodhaClone/
 │   │   │   └── ...
 │   │   ├── landing_page/     # Landing page components
 │   │   ├── data/             # Static data
+│   │   ├── config/           # Configuration files
+│   │   │   └── api.js        # API base URL configuration
 │   │   ├── index.js          # App entry point
 │   │   └── index.css         # Global styles
 │   └── package.json
@@ -288,17 +291,11 @@ ZerodhaClone/
 ## 🐛 Troubleshooting
 
 ### MongoDB Connection Issues
-<<<<<<< HEAD
-- Ensure your IP is whitelisted in MongoDB Atlas
-- Verify the connection string in `.env`
-- Check if the cluster is running
-=======
 - **For Local Development**: Ensure your IP is whitelisted in MongoDB Atlas
 - **For Deployment (Render)**: Whitelist `0.0.0.0/0` in MongoDB Atlas Network Access
 - Verify the connection string in `.env` or Render environment variables
 - Check if the cluster is running
 - Ensure username and password in connection string are correct
->>>>>>> 8cacfac (Tring to deploy backend.)
 
 ### Port Already in Use
 ```bash
@@ -309,12 +306,6 @@ lsof -ti:3002
 kill -9 <process_id>
 ```
 
-<<<<<<< HEAD
-### JWT Token Issues
-- Ensure `JWT_SECRET` is set in `.env`
-- Check token expiration (default: 7 days)
-- Verify token is sent in correct header format
-=======
 ### Render Deployment Issues
 - **No open ports detected**: Ensure server binds to `0.0.0.0` (already configured)
 - **MongoDB connection fails**: Whitelist `0.0.0.0/0` in MongoDB Atlas
@@ -325,7 +316,12 @@ kill -9 <process_id>
 - Ensure `JWT_SECRET` is set in `.env` or Render environment variables
 - Check token expiration (default: 7 days)
 - Verify token is sent in correct header format: `Authorization: Bearer <token>`
->>>>>>> 8cacfac (Tring to deploy backend.)
+
+### Frontend API Connection Issues
+- Ensure `REACT_APP_API_URL` is set in frontend `.env` file
+- For production, use the deployed backend URL: `https://zerodhaclone-backend-zzco.onrender.com`
+- Check browser console for CORS errors
+- Verify backend is running and accessible
 
 ## 🤝 Contributing
 
@@ -355,7 +351,3 @@ This project is licensed under the ISC License.
 ---
 
 **Note**: This is a clone project for educational purposes. Not affiliated with Zerodha.
-<<<<<<< HEAD
-=======
-
->>>>>>> 8cacfac (Tring to deploy backend.)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../config/axios";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -32,7 +32,7 @@ const Holdings = () => {
   useEffect(() => {
     const fetchHoldings = async () => {
       try {
-        const res = await axios.get("http://localhost:3002/api/holdings");
+        const res = await apiClient.get("/api/holdings");
         setHoldings(res.data);
       } catch (err) {
         console.error("Error fetching holdings:", err);

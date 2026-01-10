@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-
-import axios from "axios";
+import apiClient from "../config/axios";
 
 
 const Positions = () => {
   const [positions, setPositions] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3002/api/positions") // 👈 Replace with your backend URL
+    apiClient.get("/api/positions")
       .then(res => {
         setPositions(res.data);
       })

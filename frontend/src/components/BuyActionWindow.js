@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import apiClient from "../config/axios";
 
 const BuyActionWindow = ({ type, uid, onClose }) => {
   const [qty, setQty] = useState(1);
@@ -7,7 +7,7 @@ const BuyActionWindow = ({ type, uid, onClose }) => {
 
   const handleBuy = async () => {
     try {
-      const response = await axios.post("http://localhost:3002/newOrder", {
+      const response = await apiClient.post("/api/newOrder", {
         name: uid,
         qty: parseFloat(qty),
         price: parseFloat(price),

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import API_URL from '../../config/api';
 
 function SignupPage() {
     const [formData, setFormData] = useState({
@@ -26,16 +27,17 @@ function SignupPage() {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3002/api/user/register', formData);
+            const response = await axios.post(`${API_URL}/api/user/register`, formData);
             console.log('✅ Signup successful:', response.data);
             
-            // Save user data to localStorage
+            // Save user data and token to localStorage
             const userData = {
-                username: response.data.username,
-                email: response.data.email,
-                id: response.data._id
+                username: response.data.user.username,
+                email: response.data.user.email,
+                id: response.data.user.id
             };
             localStorage.setItem('user', JSON.stringify(userData));
+            localStorage.setItem('token', response.data.token);
             
             // Redirect to dashboard
             navigate('/dashboard');
