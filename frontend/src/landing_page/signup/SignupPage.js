@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../../config/axios';
 import { useNavigate, Link } from 'react-router-dom';
-import API_URL from '../../config/api';
 
 function SignupPage() {
     const [formData, setFormData] = useState({
@@ -27,7 +26,8 @@ function SignupPage() {
         setLoading(true);
 
         try {
-            const response = await axios.post(`${API_URL}/api/user/register`, formData);
+            console.log('📝 Attempting signup with:', { email: formData.email, username: formData.username });
+            const response = await apiClient.post('/api/user/register', formData);
             console.log('✅ Signup successful:', response.data);
             
             // Save user data and token to localStorage

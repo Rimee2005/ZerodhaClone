@@ -23,8 +23,23 @@ const app = express();
 const authRoute = require('./routes/auth');
 const verifyToken = require('./middleware/auth');
 
-app.use(cors());
+// CORS configuration - allow all origins for development and production
+app.use(cors({
+  origin: '*', // Allow all origins (you can restrict this to specific domains in production)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+  credentials: true
+}));
 app.use(bodyParser.json());
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use('/api/user', authRoute);
 

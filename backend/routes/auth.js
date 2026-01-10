@@ -8,7 +8,8 @@ const verifyToken = require("../middleware/auth");
 
 // Register Route
 router.post("/register", async (req, res) => {
-  console.log("Incoming register request:", req.body);
+  console.log("📥 Incoming register request:", req.body);
+  console.log("📥 Request origin:", req.headers.origin || req.headers.referer);
 
   // Validate input
   const { error } = registerValidation(req.body);
@@ -79,6 +80,9 @@ router.post("/register", async (req, res) => {
 
 // Login Route
 router.post("/login", async (req, res) => {
+  console.log("📥 Incoming login request:", { email: req.body.email });
+  console.log("📥 Request origin:", req.headers.origin || req.headers.referer);
+  
   // Validate login input
   const { error } = loginValidation(req.body);
   if (error) {
