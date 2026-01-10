@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const User = require("../model/user");
 const { registerValidation, loginValidation } = require("../validation");
-const bcrypt = require("bcryptjs"); // ✅ same as in register route
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const verifyToken = require("../middleware/auth");
 
 
 // Register Route
@@ -49,7 +51,26 @@ router.post("/register", async (req, res) => {
     const testCompareOriginal = await bcrypt.compare(plainPassword, hashedPassword);
     console.log("🔍 Verification: Can we compare with original hash?", testCompareOriginal);
     
-    res.send(savedUser);
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: savedUser._id,
+        email: savedUser.email,
+        username: savedUser.username
+      },
+      process.env.JWT_SECRET || "your-secret-key-change-in-production",
+      { expiresIn: "7d" }
+    );
+    
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: {
+        id: savedUser._id,
+        username: savedUser.username,
+        email: savedUser.email
+      }
+    });
   } catch (err) {
     console.error("❌ Error saving user:", err);
     res.status(400).send(err);
@@ -119,10 +140,48 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Invalid password" });
   }
 
+  // Generate JWT token
+  const token = jwt.sign(
+    { 
+      userId: user._id,
+      email: user.email,
+      username: user.username
+    },
+    process.env.JWT_SECRET || "your-secret-key-change-in-production",
+    { expiresIn: "7d" }
+  );
+
   // Success
   console.log("✅ Login successful for user:", email);
-  res.status(200).json({ message: "Login successful", user });
+  res.status(200).json({ 
+    message: "Login successful", 
+    token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    }
+  });
 });
 
+// Verify Token Route
+router.get("/verify", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      message: "Token is valid",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;

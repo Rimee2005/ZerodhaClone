@@ -1,3 +1,8 @@
+// Polyfill for SlowBuffer (removed in Node.js v25+)
+if (typeof Buffer.SlowBuffer === 'undefined') {
+  Buffer.SlowBuffer = Buffer;
+}
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -16,6 +21,7 @@ const uri = process.env.MONGO_URL;
 const app = express();
 
 const authRoute = require('./routes/auth');
+const verifyToken = require('./middleware/auth');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -23,8 +29,8 @@ app.use(bodyParser.json());
 app.use('/api/user', authRoute);
 
 
-// ---------- GET Holdings ----------
-app.get("/api/holdings", async (req, res) => {
+// ---------- GET Holdings (Protected) ----------
+app.get("/api/holdings", verifyToken, async (req, res) => {
   try {
     const holdings = await HoldingsModel.find();
     res.json(holdings);
@@ -34,8 +40,8 @@ app.get("/api/holdings", async (req, res) => {
   }
 });
 
-// ---------- GET Positions ----------
-app.get("/api/positions", async (req, res) => {
+// ---------- GET Positions (Protected) ----------
+app.get("/api/positions", verifyToken, async (req, res) => {
   try {
     const positions = await PositionsModel.find();
     res.json(positions);
@@ -45,8 +51,8 @@ app.get("/api/positions", async (req, res) => {
   }
 });
 
-// ---------- POST New Order (Buy/Sell) ----------
-app.post('/api/newOrder', async (req, res) => {
+// ---------- POST New Order (Buy/Sell) (Protected) ----------
+app.post('/api/newOrder', verifyToken, async (req, res) => {
   const { name, qty, price, mode } = req.body;
 
   try {
@@ -122,7 +128,8 @@ app.post('/api/newOrder', async (req, res) => {
   }
 });
 
-app.get("/api/orders", async (req, res) => {
+// ---------- GET Orders (Protected) ----------
+app.get("/api/orders", verifyToken, async (req, res) => {
   try {
     const orders = await OrdersModel.find().sort({ createdAt: -1 });
     res.json(orders);
