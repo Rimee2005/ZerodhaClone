@@ -69,6 +69,23 @@ app.get("/api/positions", verifyToken, async (req, res) => {
 // ---------- POST New Order (Buy/Sell) (Protected) ----------
 app.post('/api/newOrder', verifyToken, async (req, res) => {
   const { name, qty, price, mode } = req.body;
+  
+  console.log("📥 New order request:", { name, qty, price, mode, userId: req.user?.id });
+
+  // Validation
+  if (!name || !qty || !price || !mode) {
+    return res.status(400).json({ 
+      error: "Missing required fields",
+      message: "Name, quantity, price, and mode are required"
+    });
+  }
+
+  if (qty <= 0 || price <= 0) {
+    return res.status(400).json({ 
+      error: "Invalid values",
+      message: "Quantity and price must be greater than 0"
+    });
+  }
 
   try {
     // Step 1: Save Order
@@ -136,21 +153,59 @@ app.post('/api/newOrder', verifyToken, async (req, res) => {
       }
     }
 
-    res.send("✅ Order placed and holdings updated.");
+    res.status(200).json({ 
+      message: "Order placed and holdings updated successfully",
+      order: {
+        id: newOrder._id,
+        name: newOrder.name,
+        qty: newOrder.qty,
+        price: newOrder.price,
+        mode: newOrder.mode,
+        createdAt: newOrder.createdAt
+      },
+      mode: mode
+    });
   } catch (error) {
     console.error("🔥 Error in /newOrder:", error);
-    res.status(500).send("❌ Server error while processing order.");
+    console.error("🔥 Error stack:", error.stack);
+    res.status(500).json({ 
+      error: "Server error while processing order",
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // ---------- GET Orders (Protected) ----------
 app.get("/api/orders", verifyToken, async (req, res) => {
   try {
+    console.log("📥 Fetching orders for user:", req.user?.id);
+    
+    // Check if OrdersModel is properly initialized
+    if (!OrdersModel) {
+      console.error("❌ OrdersModel is not initialized");
+      return res.status(500).json({ error: "OrdersModel not initialized" });
+    }
+    
+    // Check if mongoose is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error("❌ MongoDB not connected. State:", mongoose.connection.readyState);
+      return res.status(500).json({ error: "Database not connected" });
+    }
+    
     const orders = await OrdersModel.find().sort({ createdAt: -1 });
+    console.log("✅ Found orders:", orders.length);
     res.json(orders);
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
-    res.status(500).json({ error: "Server error while fetching orders" });
+    console.error("❌ Error stack:", err.stack);
+    console.error("❌ Error name:", err.name);
+    console.error("❌ Error message:", err.message);
+    res.status(500).json({ 
+      error: "Server error while fetching orders",
+      message: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 

@@ -1,12 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import apiClient from "../config/axios";
+import { watchlist } from "../data/data";
 
 const BuyActionWindow = ({ type, uid, onClose }) => {
   const [qty, setQty] = useState(1);
   const [price, setPrice] = useState(0.0);
+  
+  // Set default price from watchlist data
+  useEffect(() => {
+    const stock = watchlist.find(s => s.name === uid);
+    if (stock && stock.price) {
+      setPrice(stock.price);
+    }
+  }, [uid]);
 
   const handleBuy = async () => {
+    // Validation
+    if (!qty || qty <= 0) {
+      alert("Please enter a valid quantity (greater than 0)");
+      return;
+    }
+    
+    if (!price || price <= 0) {
+      alert("Please enter a valid price (greater than 0)");
+      return;
+    }
+
     try {
+      console.log("📤 Placing order:", { name: uid, qty, price, mode: type.toUpperCase() });
       const response = await apiClient.post("/api/newOrder", {
         name: uid,
         qty: parseFloat(qty),
@@ -15,10 +36,39 @@ const BuyActionWindow = ({ type, uid, onClose }) => {
       });
 
       console.log("✅ Order placed:", response.data);
+      alert(`${type === "buy" ? "Buy" : "Sell"} order placed successfully!`);
       onClose(); // closes popup
+      // Reload the page to refresh orders and holdings
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error("❌ Order failed:", error);
-      alert("Something went wrong! Check console.");
+      console.error("❌ Error response:", error.response?.data);
+      console.error("❌ Error status:", error.response?.status);
+      
+      let errorMessage = "Something went wrong! Please try again.";
+      
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      if (error.response?.status === 401) {
+        errorMessage = "Session expired. Please login again.";
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      
+      alert(errorMessage);
     }
   };
 
