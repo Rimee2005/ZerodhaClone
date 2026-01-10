@@ -145,7 +145,8 @@ mongoose
   .connect(uri)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(PORT, () => {
+    // Bind to 0.0.0.0 for Render and other cloud platforms
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   })
@@ -154,11 +155,15 @@ mongoose
     console.error("\n📋 Troubleshooting steps:");
     console.error("1. Check if your IP address is whitelisted in MongoDB Atlas");
     console.error("   Go to: https://cloud.mongodb.com → Network Access → Add IP Address");
-    console.error("   For development, you can temporarily allow all IPs: 0.0.0.0/0");
+    console.error("   For development/deployment, you can temporarily allow all IPs: 0.0.0.0/0");
     console.error("2. Verify your MONGO_URL in .env file is correct");
     console.error("3. Check your internet connection");
-    console.error("4. Ensure your MongoDB Atlas cluster is running\n");
-    process.exit(1);
+    console.error("4. Ensure your MongoDB Atlas cluster is running");
+    console.error("5. For Render deployment, ensure MongoDB Atlas allows connections from anywhere (0.0.0.0/0)\n");
+    // Don't exit in production - let the server try to reconnect
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   });
 
 

@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
     "build": "echo 'Backend build complete - no build step needed for Node.js server'",
     "prod": "node index.js",
     "dev": "nodemon index.js"
