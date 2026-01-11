@@ -70,10 +70,14 @@ app.get("/api/positions", verifyToken, async (req, res) => {
 app.post('/api/newOrder', verifyToken, async (req, res) => {
   const { name, qty, price, mode } = req.body;
   
-  console.log("📥 New order request:", { name, qty, price, mode, userId: req.user?.id });
+  console.log("📥 New order request received");
+  console.log("📥 Request body:", { name, qty, price, mode });
+  console.log("📥 User from token:", req.user);
+  console.log("📥 User ID:", req.user?.userId || req.user?.id);
 
   // Validation
   if (!name || !qty || !price || !mode) {
+    console.error("❌ Validation failed: Missing required fields");
     return res.status(400).json({ 
       error: "Missing required fields",
       message: "Name, quantity, price, and mode are required"
@@ -81,78 +85,106 @@ app.post('/api/newOrder', verifyToken, async (req, res) => {
   }
 
   if (qty <= 0 || price <= 0) {
+    console.error("❌ Validation failed: Invalid values");
     return res.status(400).json({ 
       error: "Invalid values",
       message: "Quantity and price must be greater than 0"
     });
   }
 
-  try {
-    // Step 1: Save Order
-    const newOrder = new OrdersModel({ name, qty, price, mode });
-    await newOrder.save();
-    console.log("📥 New order saved:", newOrder);
+  // Validate and normalize mode
+  const upperMode = mode.toUpperCase();
+  if (!['BUY', 'SELL'].includes(upperMode)) {
+    return res.status(400).json({ 
+      error: "Invalid mode",
+      message: "Mode must be either 'BUY' or 'SELL'"
+    });
+  }
 
-    // Step 2: BUY Mode
-    if (mode === "BUY") {
-      let existing = await HoldingsModel.findOne({ name });
+  try {
+    // Verify OrdersModel is a constructor before using it
+    if (typeof OrdersModel !== 'function') {
+      console.error("❌ OrdersModel is not a constructor. Type:", typeof OrdersModel);
+      throw new Error("OrdersModel initialization error. Please restart the server.");
+    }
+
+    // Step 1: Save Order
+    console.log("💾 Creating new order...");
+    const newOrder = new OrdersModel({ 
+      name: name.trim().toUpperCase(), 
+      qty: parseFloat(qty), 
+      price: parseFloat(price), 
+      mode: upperMode 
+    });
+    await newOrder.save();
+    console.log("✅ Order saved successfully:", newOrder._id);
+
+    // Step 2: BUY Mode - Update Holdings
+    if (upperMode === "BUY") {
+      let existing = await HoldingsModel.findOne({ name: name.trim().toUpperCase() });
 
       if (existing) {
-        const totalQty = existing.qty + qty;
-        const totalInvestment = (existing.qty * existing.avg) + (qty * price);
+        const totalQty = existing.qty + parseFloat(qty);
+        const totalInvestment = (existing.qty * existing.avg) + (parseFloat(qty) * parseFloat(price));
         const newAvg = totalInvestment / totalQty;
 
         existing.qty = totalQty;
         existing.avg = newAvg;
-        existing.price = price;
+        existing.price = parseFloat(price);
 
         await existing.save();
-        console.log("🟢 Updated existing holding:", existing);
+        console.log("🟢 Updated existing holding:", existing.name);
       } else {
         const newHolding = new HoldingsModel({
-          name,
-          qty,
-          avg: price,
-          price,
+          name: name.trim().toUpperCase(),
+          qty: parseFloat(qty),
+          avg: parseFloat(price),
+          price: parseFloat(price),
           net: "+0.00%",
           day: "+0.00%",
         });
 
         await newHolding.save();
-        console.log("🆕 New holding created:", newHolding);
+        console.log("🆕 New holding created:", newHolding.name);
       }
 
-    // Step 3: SELL Mode
-    } else if (mode === "SELL") {
-      let existing = await HoldingsModel.findOne({ name });
+    // Step 3: SELL Mode - Update Holdings
+    } else if (upperMode === "SELL") {
+      let existing = await HoldingsModel.findOne({ name: name.trim().toUpperCase() });
 
       if (!existing) {
-        console.log("❌ Cannot sell. Holding not found.");
-        return res.status(404).send("❌ Holding not found to sell.");
+        return res.status(404).json({ 
+          error: "Holding not found",
+          message: "Cannot sell. You don't have this stock in your holdings."
+        });
       }
 
-      if (qty > existing.qty) {
-        return res.status(400).send("❌ Cannot sell more than you hold.");
+      if (parseFloat(qty) > existing.qty) {
+        return res.status(400).json({ 
+          error: "Insufficient quantity",
+          message: `Cannot sell ${qty} shares. You only have ${existing.qty} shares.`
+        });
       }
 
-      const remainingQty = existing.qty - qty;
+      const remainingQty = existing.qty - parseFloat(qty);
 
       if (remainingQty === 0) {
-        await HoldingsModel.deleteOne({ name });
+        await HoldingsModel.deleteOne({ name: name.trim().toUpperCase() });
         console.log(`🗑️ Entire holding sold and deleted: ${name}`);
       } else {
-        const totalInvestment = (existing.qty * existing.avg) - (qty * price);
+        const totalInvestment = (existing.qty * existing.avg) - (parseFloat(qty) * parseFloat(price));
         const newAvg = totalInvestment / remainingQty;
 
         existing.qty = remainingQty;
         existing.avg = newAvg;
-        existing.price = price;
+        existing.price = parseFloat(price);
 
         await existing.save();
-        console.log("🔻 Holding after sell updated:", existing);
+        console.log("🔻 Holding after sell updated:", existing.name);
       }
     }
 
+    // Success response
     res.status(200).json({ 
       message: "Order placed and holdings updated successfully",
       order: {
@@ -163,11 +195,36 @@ app.post('/api/newOrder', verifyToken, async (req, res) => {
         mode: newOrder.mode,
         createdAt: newOrder.createdAt
       },
-      mode: mode
+      mode: upperMode
     });
   } catch (error) {
-    console.error("🔥 Error in /newOrder:", error);
+    console.error("🔥 Error in /newOrder endpoint:");
+    console.error("🔥 Error name:", error.name);
+    console.error("🔥 Error message:", error.message);
     console.error("🔥 Error stack:", error.stack);
+    
+    // More detailed error information
+    if (error.name === 'ValidationError') {
+      console.error("🔥 Validation errors:", error.errors);
+      return res.status(400).json({ 
+        error: "Validation error",
+        message: error.message,
+        details: Object.keys(error.errors).map(key => ({
+          field: key,
+          message: error.errors[key].message
+        }))
+      });
+    }
+    
+    if (error.name === 'MongoServerError' || error.name === 'MongoError') {
+      console.error("🔥 MongoDB error code:", error.code);
+      return res.status(500).json({ 
+        error: "Database error",
+        message: "Failed to save order to database",
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
     res.status(500).json({ 
       error: "Server error while processing order",
       message: error.message,
