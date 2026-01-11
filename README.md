@@ -17,7 +17,7 @@ A full-stack trading platform clone inspired by Zerodha, built with React and No
   - Chart.js integration for holdings value distribution
   - Profit & Loss charts
   - Watchlist price trends and daily changes
-- **Responsive Design**: Mobile-friendly interface with adaptive layouts
+  
 
 ### Backend
 - **RESTful API**: Express.js backend with MongoDB
