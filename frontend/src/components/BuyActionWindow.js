@@ -77,17 +77,32 @@ const BuyActionWindow = ({ type, uid, onClose }) => {
 
   return (
     <div
+      onMouseEnter={(e) => {
+        // Keep popup visible when hovering over it
+        e.stopPropagation();
+      }}
+      onMouseLeave={(e) => {
+        // Don't close on mouse leave - only close on Cancel button
+        e.stopPropagation();
+      }}
+      onMouseMove={(e) => {
+        // Prevent hover events from bubbling to list items
+        e.stopPropagation();
+      }}
       style={{
         position: "absolute",
         right: "0px",
         top: "100%",
+        marginTop: "12px",
         backgroundColor: "white",
-        border: "1px solid #ccc",
-        padding: "15px",
+        border: "1px solid #e0e0e0",
+        padding: "16px",
         borderRadius: "10px",
-        zIndex: 100,
-        boxShadow: "0px 2px 10px rgba(0,0,0,0.2)",
+        zIndex: 1000,
+        boxShadow: "0px 4px 16px rgba(0,0,0,0.15)",
         width: "300px",
+        minWidth: "280px",
+        pointerEvents: "auto",
       }}
     >
       <h4 style={{ marginBottom: "10px" }}>
@@ -127,33 +142,55 @@ const BuyActionWindow = ({ type, uid, onClose }) => {
         Margin required ₹{margin}
       </p>
 
-      <div>
-        <button
-          onClick={handleBuy}
-          style={{
-            backgroundColor: "#1976d2",
-            color: "white",
-            padding: "6px 12px",
-            marginRight: "10px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          {type === "buy" ? "Buy" : "Sell"}
-        </button>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "12px" }}>
         <button
           onClick={onClose}
           style={{
-            backgroundColor: "#aaa",
+            backgroundColor: "#6c757d",
             color: "white",
-            padding: "6px 12px",
+            padding: "8px 16px",
             border: "none",
-            borderRadius: "5px",
+            borderRadius: "6px",
             cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: "600",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#5a6268";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#6c757d";
           }}
         >
           Cancel
+        </button>
+        <button
+          onClick={handleBuy}
+          style={{
+            backgroundColor: type === "buy" ? "#28a745" : "#dc3545",
+            color: "white",
+            padding: "8px 20px",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: "600",
+            transition: "all 0.2s ease",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = type === "buy" ? "#218838" : "#c82333";
+            e.target.style.transform = "translateY(-1px)";
+            e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = type === "buy" ? "#28a745" : "#dc3545";
+            e.target.style.transform = "translateY(0)";
+            e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+          }}
+        >
+          {type === "buy" ? "Buy" : "Sell"}
         </button>
       </div>
     </div>

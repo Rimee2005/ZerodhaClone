@@ -241,9 +241,19 @@ const WatchList = () => {
         </span>
       </div>
 
-      <ul className="list">
-        {watchlist.map((stock, index) => (
-          <li key={index}>
+      <ul className="list" style={{ position: "relative" }}>
+        {watchlist.map((stock, index) => {
+          const isPopupOpen = popup.uid === stock.name && popup.type;
+          const hasAnyPopupOpen = popup.uid && popup.type;
+          return (
+          <li 
+            key={index}
+            className={isPopupOpen ? "popup-open" : ""}
+            style={{
+              pointerEvents: hasAnyPopupOpen && !isPopupOpen ? "none" : "auto",
+              zIndex: isPopupOpen ? 1000 : "auto",
+            }}
+          >
             <div className="item">
               <p style={{ 
                 color: stock.isDown ? "#dc3545" : "#28a745",
@@ -272,11 +282,12 @@ const WatchList = () => {
               </div>
             </div>
 
-            {popup.uid === stock.name && popup.type && (
+            {isPopupOpen && (
               <BuyActionWindow type={popup.type} uid={popup.uid} onClose={closePopup} />
             )}
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       {/* Chart Toggle Button */}

@@ -943,6 +943,22 @@ hr {
   transition: all 0.3s ease;
   background: #ffffff;
   border: 1px solid #f0f0f0;
+  position: relative;
+}
+
+/* Prevent hover on list items when popup is open */
+.list li.popup-open {
+  z-index: 999;
+}
+
+/* Disable hover effects on all other items when any popup is open */
+.list:has(.popup-open) li:not(.popup-open) {
+  pointer-events: none;
+}
+
+/* Fallback for browsers that don't support :has() */
+.list li.popup-open ~ li {
+  pointer-events: none;
 }
 
 .list li:hover {
@@ -979,8 +995,9 @@ hr {
   pointer-events: none;
 }
 
-/* Show buttons only when list item is hovered */
-.list li:hover .action-buttons {
+/* Show buttons only when list item is hovered OR popup is open */
+.list li:hover .action-buttons,
+.list li.popup-open .action-buttons {
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
