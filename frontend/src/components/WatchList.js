@@ -252,34 +252,11 @@ const WatchList = () => {
               }}>
                 {stock.name}
               </p>
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div className="action-buttons">
                 <Tooltip title="Buy" placement="top" arrow TransitionComponent={Grow}>
                   <button
                     onClick={() => showPopup("buy", stock.name)}
-                    style={{ 
-                      background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
-                      color: "white",
-                      padding: "8px 18px",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontSize: "0.75rem",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "linear-gradient(135deg, #218838 0%, #1aa179 100%)";
-                      e.target.style.transform = "translateY(-2px)";
-                      e.target.style.boxShadow = "0 4px 12px rgba(40, 167, 69, 0.4)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "linear-gradient(135deg, #28a745 0%, #20c997 100%)";
-                      e.target.style.transform = "translateY(0)";
-                      e.target.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
-                    }}
+                    className="buy-btn"
                   >
                     Buy
                   </button>
@@ -287,30 +264,7 @@ const WatchList = () => {
                 <Tooltip title="Sell" placement="top" arrow TransitionComponent={Grow}>
                   <button
                     onClick={() => showPopup("sell", stock.name)}
-                    style={{ 
-                      background: "linear-gradient(135deg, #dc3545 0%, #e83e8c 100%)",
-                      color: "white",
-                      padding: "8px 18px",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontSize: "0.75rem",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      transition: "all 0.3s ease",
-                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "linear-gradient(135deg, #c82333 0%, #d91a72 100%)";
-                      e.target.style.transform = "translateY(-2px)";
-                      e.target.style.boxShadow = "0 4px 12px rgba(220, 53, 69, 0.4)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "linear-gradient(135deg, #dc3545 0%, #e83e8c 100%)";
-                      e.target.style.transform = "translateY(0)";
-                      e.target.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
-                    }}
+                    className="sell-btn"
                   >
                     Sell
                   </button>

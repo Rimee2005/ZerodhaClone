@@ -957,6 +957,7 @@ hr {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .item p {
@@ -967,7 +968,27 @@ hr {
   letter-spacing: 0.3px;
 }
 
-.item button {
+/* Action buttons container */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* Show buttons only when list item is hovered */
+.list li:hover .action-buttons {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Button base styles */
+.action-buttons button {
   padding: 8px 18px;
   border: none;
   border-radius: 8px;
@@ -978,27 +999,30 @@ hr {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
-.item button:first-of-type {
+/* Buy button */
+.buy-btn {
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: #ffffff;
 }
 
-.item button:first-of-type:hover {
+.buy-btn:hover {
   background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
-.item button:last-of-type {
+/* Sell button */
+.sell-btn {
   background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
   color: #ffffff;
 }
 
-.item button:last-of-type:hover {
+.sell-btn:hover {
   background: linear-gradient(135deg, #c82333 0%, #d91a72 100%);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
 }
 
